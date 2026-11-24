@@ -1,0 +1,1533 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Roch TV</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Apple iOS Web App & PWA Standalone Support (All iOS Versions) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Roch TV">
+    <link rel="apple-touch-icon" href="img/roch.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/roch.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#060911">
+
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css?v=65">
+    <script>
+        // Force JS reload
+        const appVersion = 65;
+    </script>
+</head>
+
+<body>
+
+    <!-- LIVE BROADCAST MARQUEE TICKER BANNER -->
+    <div id="live-broadcast-ticker" class="broadcast-ticker-banner" style="display:none;">
+        <div class="ticker-badge" id="ticker-badge-container">
+            <i class="fa-solid fa-bullhorn fa-beat-fade"></i>
+            <span id="ticker-badge-text">ANNOUNCEMENT</span>
+        </div>
+        <div class="ticker-track">
+            <div class="ticker-content" id="ticker-marquee-text"></div>
+        </div>
+        <div class="ticker-timer" id="ticker-timer-display" style="display:none;">
+            <i class="fa-regular fa-clock"></i> <span id="ticker-countdown"></span>
+        </div>
+        <button type="button" class="ticker-close-btn" onclick="dismissBroadcastTicker()" title="Dismiss announcement">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- DEVICE SECURITY LOCKOUT SCREEN -->
+    <div id="device-lockout-screen" class="lockout-screen" style="display:none;">
+        <div class="lockout-backdrop"></div>
+        <div class="lockout-card">
+            <div class="lockout-icon-box">
+                <i id="lockout-icon" class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="lockout-badge" id="lockout-badge-status">UNAUTHORIZED DEVICE</div>
+            <h2 id="lockout-headline" class="lockout-title">Device Not Activated</h2>
+            <p id="lockout-message" class="lockout-desc">
+                This streaming device has not been activated by the master administrator. Provide your MAC Address to
+                activate your subscription.
+            </p>
+            <div class="lockout-info-box">
+                <div class="mac-spotlight-card">
+                    <div class="mac-spotlight-header">
+                        <span class="mac-spotlight-label"><i class="fa-solid fa-network-wired"></i> Your MAC
+                            Address:</span>
+                        <button type="button" class="btn-copy-chip" onclick="copyDeviceMac()" id="btn-copy-mac"
+                            title="Copy MAC Address">
+                            <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="mac-spotlight-value" id="lockout-display-mac">Detecting...</div>
+                </div>
+                <div class="device-details-list">
+                    <div class="device-detail-row">
+                        <span class="detail-label">Device ID:</span>
+                        <strong class="detail-value" id="lockout-display-devid">Detecting...</strong>
+                    </div>
+                    <div class="device-detail-row">
+                        <span class="detail-label">Platform:</span>
+                        <span class="detail-value" id="lockout-display-platform">Smart TV</span>
+                    </div>
+                </div>
+            </div>
+            <div class="lockout-action-row"
+                style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:440px; margin:0 auto;">
+                <button type="button" class="btn-lockout-retry btn-lockout-primary" id="btn-lockout-signin"
+                    onclick="openLoginFromLockout()"
+                    style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: 1px solid #38bdf8; color:#ffffff; font-weight:800; font-size:1rem; padding:13px 20px; width:100%; justify-content:center; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.45);">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In with Username &amp; Password
+                </button>
+                <div style="display:flex; gap:10px; width:100%; justify-content:center; flex-wrap:wrap;">
+                    <button type="button" class="btn-lockout-retry" onclick="retrySecurityHandshake()"
+                        style="flex:1; justify-content:center; font-size:0.85rem; padding:10px 14px;">
+                        <i class="fa-solid fa-rotate"></i> Check Activation
+                    </button>
+                    <button type="button" class="btn-lockout-retry" onclick="openRedeemGiftCodePrompt()"
+                        style="background:#ec4899; border: 1px solid #f472b6; flex:1; justify-content:center; font-size:0.85rem; padding:10px 14px; color:#fff;">
+                        <i class="fa-solid fa-gift"></i> Redeem Gift Code
+                    </button>
+                </div>
+            </div>
+            <div class="lockout-footer-note">
+                Roch TV Security Protection &copy; 2026 • license by:ichiban_kuriosaki
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN (ROCH TV CINEMA PORTAL) -->
+    <div id="login-screen" class="screen active">
+        <div class="login-overlay"></div>
+        <div class="login-ambient-glow"></div>
+
+        <!-- FLOATING FROSTED GLASS HEADER -->
+        <header class="roch-navbar">
+            <div class="roch-nav-brand">
+                <img src="img/roch.png" alt="Roch TV" class="roch-brand-logo" onerror="this.src='img/pbb.png'">
+                <div class="roch-brand-meta">
+                    <span class="roch-brand-name">ROCH <span class="accent-text">TV</span></span>
+                    <span class="roch-node-pill"><span class="node-pulse-dot"></span> 4K CLOUD STREAM</span>
+                </div>
+            </div>
+
+            <div class="roch-nav-actions">
+                <!-- COMPACT 1-LINE SMART TV BADGE -->
+                <div class="header-smart-tv-badge-compact" id="header-smart-tv-badge"
+                    title="Samsung (Tizen) & LG (webOS) stream directly through this web browser with zero installation!">
+                    <div class="compact-tv-icon"><i class="fa-solid fa-tv"></i></div>
+                    <div class="compact-tv-text">
+                        <span class="tag-bold">Smart TV:</span>
+                        <span class="tag-desc">Direct Web Play</span>
+                    </div>
+                </div>
+
+                <!-- DEDICATED APPLE iOS BUTTON IN HEADER -->
+                <div class="header-ios-badge-wrap" id="header-ios-badge-wrap">
+                    <button type="button" class="btn-header-ios" id="btn-header-ios" onclick="openIosInstallModal()"
+                        title="Apple iOS (iPhone, iPad & Apple TV): Web App & App Store Player">
+                        <i class="fa-brands fa-apple"></i>
+                        <span id="header-ios-text">Apple iOS</span>
+                    </button>
+                </div>
+
+                <!-- UNIFIED DOWNLOAD DROPDOWN -->
+                <div class="header-download-dropdown-wrap apk-download-target">
+                    <button type="button" class="btn-header-download-dropdown" id="btn-header-download"
+                        onclick="toggleDownloadDropdown(event)" aria-expanded="false">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Apps</span>
+                        <i class="fa-solid fa-chevron-down drop-arrow" id="drop-arrow-icon"></i>
+                    </button>
+                    <div class="header-download-menu" id="header-download-menu">
+                        <div class="menu-header">Available Clients &amp; Apps</div>
+                        <a href="downloads/roch-tv.apk" class="download-menu-item" download
+                            title="Download APK for Android TV, Google TV & Firestick">
+                            <div class="menu-item-icon tv"><i class="fa-solid fa-tv"></i></div>
+                            <div class="menu-item-info">
+                                <span class="menu-item-title">Android TV &amp; Firestick</span>
+                                <span class="menu-item-desc">Leanback APK for Smart TV &amp; Boxes</span>
+                            </div>
+                            <i class="fa-solid fa-arrow-down-to-bracket menu-action-icon"></i>
+                        </a>
+                        <a href="downloads/roch-highend.apk" class="download-menu-item" download
+                            title="Download APK for Android Mobile">
+                            <div class="menu-item-icon mobile"><i class="fa-solid fa-bolt"></i></div>
+                            <div class="menu-item-info">
+                                <span class="menu-item-title">Android Mobile</span>
+                                <span class="menu-item-desc">Hardware-accelerated mobile edition</span>
+                            </div>
+                            <i class="fa-solid fa-arrow-down-to-bracket menu-action-icon"></i>
+                        </a>
+                        <a href="#" onclick="openIosInstallModal(); toggleDownloadDropdown(event); return false;"
+                            class="download-menu-item" title="Universal iOS Web App &amp; App Store Player">
+                            <div class="menu-item-icon ios"><i class="fa-brands fa-apple"></i></div>
+                            <div class="menu-item-info">
+                                <span class="menu-item-title">Apple iOS (iPhone &amp; iPad)</span>
+                                <span class="menu-item-desc">Universal Web App &amp; App Store setup</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right menu-action-icon" style="color:#ffffff;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CONTROLLER PORTAL LINK -->
+
+            </div>
+        </header>
+
+        <!-- MAIN CINEMA CENTERPIECE STAGE -->
+        <main class="roch-login-stage">
+            <div class="roch-hero-header">
+                <div class="roch-hero-tag">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>ROCH TV ENTERTAINMENT CLOUD</span>
+                </div>
+                <h1 class="roch-hero-title">Television <span class="neon-gradient-text">Reimagined.</span></h1>
+                <p class="roch-hero-subtitle">
+                    Live global channels, cinematic 4K blockbusters, and episodic boxsets with zero buffering.
+                </p>
+            </div>
+
+            <!-- LUXURY GLASS PORTAL CARD -->
+            <div class="roch-portal-card">
+                <!-- SEGMENTED TAB SWITCHER -->
+                <div class="roch-card-tabs">
+                    <button type="button" class="roch-tab-btn active" id="tab-btn-account"
+                        onclick="switchLoginMode('account')">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Sign In</span>
+                    </button>
+                    <button type="button" class="roch-tab-btn" id="tab-btn-voucher"
+                        onclick="switchLoginMode('voucher')">
+                        <i class="fa-solid fa-gift"></i>
+                        <span>Redeem Voucher</span>
+                    </button>
+                </div>
+
+                <!-- Hidden MAC container for background script compatibility -->
+                <span id="login-display-mac" style="display:none;"></span>
+
+                <!-- TAB 1: XTREAM LINE LOGIN FORM -->
+                <div id="login-view-account" class="login-tab-content">
+                    <div id="unactivated-login-tip"
+                        style="display:none; background: rgba(56, 189, 248, 0.14); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.82rem; color: #bae6fd; text-align: center; line-height: 1.4;">
+                        <i class="fa-solid fa-circle-check" style="color:#38bdf8; margin-right:4px;"></i>
+                        <strong>Activation by Account:</strong> Sign in with your IPTV username &amp; password to
+                        authorize and activate this device automatically!
+                    </div>
+                    <form id="login-form">
+                        <div class="roch-field-group">
+                            <label class="roch-field-label" for="username">Username</label>
+                            <div class="roch-input-wrap">
+                                <i class="fa-solid fa-user roch-input-icon icon-cyan"></i>
+                                <input type="text" id="username" class="roch-input" placeholder="e.g. vip_user"
+                                    autocomplete="username" required>
+                            </div>
+                        </div>
+
+                        <div class="roch-field-group">
+                            <label class="roch-field-label" for="password">Password</label>
+                            <div class="roch-input-wrap">
+                                <i class="fa-solid fa-lock roch-input-icon icon-indigo"></i>
+                                <input type="password" id="password" class="roch-input" placeholder="••••••••"
+                                    autocomplete="current-password" required>
+                                <button type="button" class="roch-eye-toggle" onclick="togglePasswordVisibility()"
+                                    title="Show/Hide Password">
+                                    <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="roch-form-row">
+                            <label class="roch-checkbox-label">
+                                <input type="checkbox" id="remember-me-check" checked>
+                                <span class="custom-checkbox"></span>
+                                <span>Remember session</span>
+                            </label>
+                            <a href="#" class="roch-help-link"
+                                onclick="alert('Please contact your administrator to activate or renew your subscription.'); return false;">
+                                Need help?
+                            </a>
+                        </div>
+
+                        <button type="submit" class="btn-roch-glow-launch" id="btn-login-submit">
+                            <span class="btn-launch-glow-line"></span>
+                            <i class="fa-solid fa-play"></i>
+                            <span>Start Streaming</span>
+                            <i class="fa-solid fa-arrow-right btn-launch-arrow"></i>
+                        </button>
+                    </form>
+
+                    <!-- View Device MAC & Activation Status Link -->
+                    <div style="text-align:center; margin-top:8px;">
+                        <a href="javascript:void(0)" onclick="openLockoutFromLogin()"
+                            style="color:#94a3b8; font-size:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:color 0.2s;"
+                            onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'">
+                            <i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i>
+                            <span>Need MAC Address? View Device Activation Info</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- TAB 2: INSTANT GIFT CODE / VOUCHER REDEEM -->
+                <div id="login-view-voucher" class="login-tab-content" style="display:none;">
+                    <div class="voucher-inner-box">
+                        <div class="voucher-card-lead">
+                            <div class="voucher-icon-orb"><i class="fa-solid fa-gift"></i></div>
+                            <div class="voucher-lead-text">
+                                <strong>Instant Gift Code Activation</strong>
+                                <span>Redeem a voucher to unlock access on this device immediately.</span>
+                            </div>
+                        </div>
+
+                        <div class="roch-field-group">
+                            <label class="roch-field-label" for="card-voucher-code">Subscription Voucher Code</label>
+                            <div class="roch-input-wrap">
+                                <i class="fa-solid fa-ticket roch-input-icon icon-pink"></i>
+                                <input type="text" id="card-voucher-code" class="roch-input voucher-code-input"
+                                    placeholder="ROCH-VIP-XXXX-XXXX" autocomplete="off" autocapitalize="characters">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-roch-glow-launch btn-pink-glow"
+                            onclick="submitDirectCardVoucher()">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Activate Subscription</span>
+                        </button>
+
+                        <button type="button" class="btn-back-to-login" onclick="switchLoginMode('account')">
+                            <i class="fa-solid fa-arrow-left"></i> Return to Account Sign In
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CLIENT APPS LAUNCH DOCK -->
+                <div class="roch-app-dock apk-download-target">
+                    <div class="dock-divider">
+                        <span>OR STREAM VIA NATIVE CLIENT APPS</span>
+                    </div>
+                    <div class="dock-grid">
+                        <a href="downloads/roch-tv.apk" class="dock-btn dock-tv" download
+                            title="Android TV & Firestick APK">
+                            <i class="fa-solid fa-tv"></i>
+                            <div class="dock-text">
+                                <span class="dock-name">Android TV</span>
+                                <span class="dock-sub">Firestick APK</span>
+                            </div>
+                        </a>
+                        <a href="downloads/roch-highend.apk" class="dock-btn dock-mobile" download
+                            title="Android Mobile APK">
+                            <i class="fa-solid fa-bolt"></i>
+                            <div class="dock-text">
+                                <span class="dock-name">Mobile APK</span>
+                                <span class="dock-sub">Android 14+</span>
+                            </div>
+                        </a>
+                        <a href="#" onclick="openIosInstallModal(); return false;" class="dock-btn dock-ios"
+                            title="Apple iOS WebClip & App">
+                            <i class="fa-brands fa-apple"></i>
+                            <div class="dock-text">
+                                <span class="dock-name">Apple iOS</span>
+                                <span class="dock-sub">WebClip &amp; App</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FLOATING SPECIFICATION PILLS -->
+            <div class="roch-spec-strip">
+                <div class="spec-pill"><i class="fa-solid fa-bolt text-cyan"></i> <span>Sub-Second Zap</span></div>
+                <div class="spec-pill"><i class="fa-solid fa-tv text-indigo"></i> <span>4K HDR 60fps</span></div>
+                <div class="spec-pill"><i class="fa-solid fa-volume-high text-pink"></i> <span>Dolby 5.1 Surround</span>
+                </div>
+                <div class="spec-pill"><i class="fa-solid fa-shield-halved text-emerald"></i> <span>Hardware Lock</span>
+                </div>
+            </div>
+
+            <!-- FOOTER COPYRIGHT & LICENSE -->
+            <footer class="roch-stage-footer">
+                <span>Roch TV Cloud Platform &copy; 2026 &bull; <span class="license-highlight"><i
+                            class="fa-solid fa-certificate"></i> license by:
+                        <strong>ichiban_kuriosaki</strong></span></span>
+            </footer>
+        </main>
+    </div>
+
+    <!-- DASHBOARD SCREEN (Multi-Theme Controller Supported) -->
+    <div id="dashboard-screen" class="screen">
+
+        <!-- ================= THEME 1: MODERN CINEMA (SMARTONE STYLE) ================= -->
+        <div id="theme1-dashboard-view" class="theme-dashboard-layout theme1-layout">
+            <div class="dashboard-bg">
+                <canvas id="fiber-canvas" class="dashboard-canvas"></canvas>
+            </div>
+            <div class="dashboard-overlay-gradient"></div>
+
+            <!-- SmartOne Top Header -->
+            <header class="smartone-header">
+                <div class="smartone-brand">
+                    <img src="img/roch.png" alt="Roch TV" class="smartone-logo" onerror="this.src='img/pbb.png'">
+                    <div class="smartone-datetime">
+                        <span id="smart-time" class="smart-time">--:--:--</span>
+                        <span id="smart-date" class="smart-date">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="smartone-account-badge">
+                    <div class="badge-item user-info">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>User: <strong id="display-user">Guest</strong></span>
+                    </div>
+                    <div class="badge-item status-info">
+                        <span class="status-dot"></span>
+                        <span id="account-status">Active</span>
+                    </div>
+                    <div class="badge-item expiry-info">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>Exp: <strong id="expiry-date">Unlimited</strong></span>
+                    </div>
+                </div>
+
+                <div class="smartone-header-actions">
+                    <button class="smartone-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen (TV Mode)"><i
+                            class="fa-solid fa-expand"></i><span>Fullscreen</span></button>
+                    <button class="smartone-btn" onclick="openFavorites()" title="Favorites"><i class="fa-solid fa-star"
+                            style="color: var(--primary-color);"></i><span>Favorites</span></button>
+                    <button class="smartone-btn" onclick="openSettingsModal()" title="Settings"><i
+                            class="fa-solid fa-sliders"></i><span>Settings</span></button>
+                    <button class="smartone-btn" onclick="reloadPlaylist()" title="Reload Playlist"><i
+                            class="fa-solid fa-rotate"></i><span>Reload</span></button>
+                    <button class="smartone-btn btn-logout" onclick="logout()" title="Logout"><i
+                            class="fa-solid fa-power-off"></i><span>Logout</span></button>
+                </div>
+            </header>
+
+            <!-- SmartOne Main Cards Grid (Live TV, Movies, Series) -->
+            <div class="smartone-dashboard-container">
+                <div class="smartone-cards-grid">
+                    <!-- LIVE TV -->
+                    <div class="smartone-card card-livetv" tabindex="0" onclick="openSection('Live TV')">
+                        <div class="card-glow-layer"></div>
+                        <div class="card-badge live"><span class="pulse-dot"></span> LIVE</div>
+                        <div class="card-icon-box">
+                            <i class="fa-solid fa-satellite-dish"></i>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">LIVE TV</h3>
+                            <p class="card-desc">Live Broadcasts & EPG Channels</p>
+                            <div class="card-meta"><i class="fa-solid fa-tower-broadcast"></i> <span>Digital Cable &
+                                    Satellite</span></div>
+                        </div>
+                        <div class="card-footer-action">
+                            <span>View Channels</span> <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- MOVIES (VOD) -->
+                    <div class="smartone-card card-movies" tabindex="0" onclick="openSection('Movies')">
+                        <div class="card-glow-layer"></div>
+                        <div class="card-badge vod">VOD</div>
+                        <div class="card-icon-box">
+                            <i class="fa-solid fa-film"></i>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">MOVIES</h3>
+                            <p class="card-desc">Feature Films & Video On Demand</p>
+                            <div class="card-meta"><i class="fa-solid fa-film"></i> <span>4K UHD & 1080p Cinema</span>
+                            </div>
+                        </div>
+                        <div class="card-footer-action">
+                            <span>Browse Library</span> <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- SERIES -->
+                    <div class="smartone-card card-series" tabindex="0" onclick="openSection('Series')">
+                        <div class="card-glow-layer"></div>
+                        <div class="card-badge series">SERIES</div>
+                        <div class="card-icon-box">
+                            <i class="fa-solid fa-tv"></i>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">SERIES</h3>
+                            <p class="card-desc">Television Shows, Boxsets & Seasons</p>
+                            <div class="card-meta"><i class="fa-solid fa-layer-group"></i> <span>Complete Episodic
+                                    Content</span></div>
+                        </div>
+                        <div class="card-footer-action">
+                            <span>Explore Seasons</span> <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SmartOne Bottom TV Footer -->
+            <footer class="smartone-footer">
+                <div class="footer-left">
+                    <span class="server-status-dot"></span>
+                    <span>Service: <strong id="server-name-display">ROCH Tv</strong></span>
+                </div>
+                <div class="footer-center">
+                    <div class="remote-key-guide">
+                        <span class="key-badge"><kbd>◄ ►</kbd> Navigate</span>
+                        <span class="key-badge"><kbd>OK</kbd> Select</span>
+                        <span class="key-badge"><kbd>ESC</kbd> Return</span>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <span class="license-by-badge"><i class="fa-solid fa-certificate"></i> license
+                        by:ichiban_kuriosaki</span>
+                    <span class="smartone-app-version"><i class="fa-solid fa-shield-halved"></i> Roch TV v2.1</span>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ================= THEME 2: HOTEL IPTV SOLUTION ================= -->
+        <div id="theme2-dashboard-view" class="theme-dashboard-layout theme2-layout" style="display:none;">
+            <!-- Wallpaper Background with Sunset Pool Villa -->
+            <div class="hotel-theme-bg" style="background-image: url('img/theme2_bg.jpg');">
+                <canvas id="hotel-canvas" class="dashboard-canvas"></canvas>
+            </div>
+            <div class="hotel-theme-overlay"></div>
+
+            <!-- Top Header -->
+            <header class="hotel-theme-header">
+                <!-- Top-Left Branding Matching User Screenshot -->
+                <div class="hotel-brand-wrap" id="hotel-brand-wrap">
+                    <div class="hotel-logo-row" id="hotel-logo-row-container">
+                        <div class="hotel-equalizer-badge" id="hotel-eq-badge">
+                            <div class="eq-col">
+                                <span class="eq-dot"></span>
+                                <span class="eq-line"></span>
+                            </div>
+                            <div class="eq-col">
+                                <span class="eq-line"></span>
+                                <span class="eq-dot"></span>
+                            </div>
+                            <div class="eq-col">
+                                <span class="eq-dot"></span>
+                                <span class="eq-line"></span>
+                            </div>
+                        </div>
+                        <div class="hotel-brand-text" id="hotel-brand-text-display">
+                            <span style="color:#ffffff; font-weight:900;">BR</span><span
+                                style="color:#22c55e; font-weight:800; font-size:1.1rem; line-height:0.8; margin-top:-6px; display:inline-block;">itt</span><span
+                                style="color:#22c55e; font-weight:600; margin-left:2px;">oadcast</span>
+                        </div>
+                    </div>
+                    <img id="hotel-custom-logo-img" src="" alt="Brand Logo"
+                        style="display:none; max-height:48px; max-width:240px; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8)); margin-bottom:4px;">
+                    <div class="hotel-solution-subtitle" id="hotel-solution-subtitle-display">Hotel IPTV Solution</div>
+                </div>
+
+                <!-- Top-Right Prominent Date & Huge Digital Clock (Matching Picture) -->
+                <div class="hotel-clock-wrap">
+                    <div class="hotel-date-col">
+                        <div class="hotel-full-date" id="hotel-clock-date">8 March 2024</div>
+                        <div class="hotel-day-name" id="hotel-clock-day">FRIDAY</div>
+                    </div>
+                    <div class="hotel-big-time" id="hotel-clock-time">12:53</div>
+                </div>
+            </header>
+
+            <!-- Main Interactive Tile Grid -->
+            <div class="hotel-main-container">
+                <div class="hotel-grid-wrapper">
+
+                    <!-- Spotlight Card: ROOM 102 - About Hotel (Left Column, Full 2-Row Height) -->
+                    <div class="hotel-spotlight-card" id="theme2-card-room" tabindex="0"
+                        onclick="handleTheme2TileAction('room_info')"
+                        style="background-image: url('img/theme2_room.jpg');">
+                        <div class="spotlight-header-overlay">
+                            <div class="spotlight-room-number" id="hotel-display-room">ROOM NOC</div>
+                            <div class="spotlight-room-sub" id="hotel-display-room-sub">About Hotel</div>
+                        </div>
+                        <div class="spotlight-footer-hint">
+                            <i class="fa-solid fa-circle-info"></i> Resort & Concierge Info
+                        </div>
+                    </div>
+
+                    <!-- Center & Right Multi-Tile Cluster (Matching Picture) -->
+                    <div class="hotel-tiles-cluster" id="hotel-tiles-cluster-container">
+
+                        <!-- Row 1: TV, MOVIES, SERIES (Dedicated), WEATHER, DINING -->
+                        <div class="hotel-tiles-row hotel-row-top" id="hotel-tiles-row-1">
+
+                            <!-- Tile 1: TV (Live TV) -->
+                            <div class="hotel-tile tile-tv" id="theme2-tile-tile_tv" data-tile-id="tile_tv" tabindex="0"
+                                onclick="handleTheme2TileAction('livetv')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-tv"></i>
+                                </div>
+                                <div class="tile-label">TV</div>
+                            </div>
+
+                            <!-- Tile 2: MOVIES (Golden film reels photo) -->
+                            <div class="hotel-tile tile-photo tile-movies" id="theme2-tile-tile_movies"
+                                data-tile-id="tile_movies" tabindex="0" onclick="handleTheme2TileAction('movies')"
+                                style="background-image: url('img/theme2_movies.jpg');">
+                                <div class="tile-photo-scrim"></div>
+                                <div class="tile-label">MOVIES</div>
+                            </div>
+
+                            <!-- Tile 3: SERIES (Dedicated Cinema Clapper & Film reels photo) -->
+                            <div class="hotel-tile tile-photo tile-series" id="theme2-tile-tile_series"
+                                data-tile-id="tile_series" tabindex="0" onclick="handleTheme2TileAction('series')"
+                                style="background-image: url('img/theme2_series.jpg');">
+                                <div class="tile-photo-scrim"></div>
+                                <div class="tile-label">SERIES</div>
+                            </div>
+
+                            <!-- Tile 4: WEATHER -->
+                            <div class="hotel-tile tile-weather" id="theme2-tile-tile_weather"
+                                data-tile-id="tile_weather" tabindex="0" onclick="handleTheme2TileAction('weather')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-cloud-showers-heavy"></i>
+                                </div>
+                                <div class="tile-label" id="hotel-weather-temp">+10°C</div>
+                            </div>
+
+                            <!-- Tile 5: DINING (Fine dining dish photo) -->
+                            <div class="hotel-tile tile-photo tile-wide tile-dining" id="theme2-tile-tile_dining"
+                                data-tile-id="tile_dining" tabindex="0" onclick="handleTheme2TileAction('dining')"
+                                style="background-image: url('img/theme2_dining.jpg');">
+                                <div class="tile-photo-scrim"></div>
+                                <div class="tile-label">DINING</div>
+                            </div>
+
+                        </div>
+
+                        <!-- Row 2: Store, Bill, Language, Messages, ROOM SERVICES -->
+                        <div class="hotel-tiles-row hotel-row-bottom" id="hotel-tiles-row-2">
+
+                            <!-- Tile 6: Store (Favorites / VOD) -->
+                            <div class="hotel-tile tile-store" id="theme2-tile-tile_store" data-tile-id="tile_store"
+                                tabindex="0" onclick="handleTheme2TileAction('favorites')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </div>
+                                <div class="tile-label">STORE</div>
+                            </div>
+
+                            <!-- Tile 7: Bill (Account & Expiry) -->
+                            <div class="hotel-tile tile-bill" id="theme2-tile-tile_bill" data-tile-id="tile_bill"
+                                tabindex="0" onclick="handleTheme2TileAction('bill')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-credit-card"></i>
+                                </div>
+                                <div class="tile-label">BILL</div>
+                            </div>
+
+                            <!-- Tile 8: Language (Settings) -->
+                            <div class="hotel-tile tile-language" id="theme2-tile-tile_language"
+                                data-tile-id="tile_language" tabindex="0" onclick="handleTheme2TileAction('settings')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-globe"></i>
+                                </div>
+                                <div class="tile-label">LANGUAGE</div>
+                            </div>
+
+                            <!-- Tile 9: Messages (Broadcast Announcement) -->
+                            <div class="hotel-tile tile-messages" id="theme2-tile-tile_messages"
+                                data-tile-id="tile_messages" tabindex="0" onclick="handleTheme2TileAction('messages')">
+                                <div class="tile-icon-holder">
+                                    <i class="fa-solid fa-comment-dots"></i>
+                                </div>
+                                <div class="tile-label">MESSAGES</div>
+                            </div>
+
+                            <!-- Tile 10: ROOM SERVICES (Luxury hotel bed photo) -->
+                            <div class="hotel-tile tile-photo tile-wide tile-services"
+                                id="theme2-tile-tile_room_services" data-tile-id="tile_room_services" tabindex="0"
+                                onclick="handleTheme2TileAction('room_services')"
+                                style="background-image: url('img/theme2_bed.jpg');">
+                                <div class="tile-photo-scrim"></div>
+                                <div class="tile-label">ROOM SERVICES</div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Bottom Floating Quick Info & License -->
+            <footer class="hotel-theme-footer">
+                <div class="hotel-footer-left">
+                    <span class="hotel-status-pip"></span>
+                    <span>High-Speed IPTV Feed Connected</span>
+                </div>
+                <div class="hotel-footer-center">
+                    <span class="hotel-key-tip"><kbd>◄ ▲ ▼ ►</kbd> Navigate</span>
+                    <span class="hotel-key-tip"><kbd>OK</kbd> Select</span>
+                    <span class="hotel-key-tip"><kbd>ESC</kbd> Return</span>
+                </div>
+                <div class="hotel-footer-right">
+                    <span class="hotel-license"><i class="fa-solid fa-certificate"></i> license
+                        by:ichiban_kuriosaki</span>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ================= THEME 3: OTT CINEMA SPOTLIGHT ================= -->
+        <div id="theme3-dashboard-view" class="theme-dashboard-layout theme3-layout" style="display:none;">
+            <!-- Dynamic Hero Backdrop Image with Cinematic Dark Gradients -->
+            <div class="theme3-backdrop-container">
+                <img id="theme3-hero-backdrop-img" class="theme3-backdrop-img" src="img/theme3_bg.jpg" alt="Backdrop">
+                <div class="theme3-backdrop-gradient"></div>
+                <div class="theme3-backdrop-radial"></div>
+            </div>
+
+            <!-- Top Navigation Bar Matching Screenshot: Movies, TV Series, Lives, Search, Settings -->
+            <header class="theme3-top-navbar" id="theme3-top-navbar">
+                <div class="theme3-nav-brand">
+                    <img src="img/roch.png" alt="Roch TV" class="theme3-nav-logo" onerror="this.src='img/pbb.png'">
+                    <span class="theme3-nav-title">ROCH TV</span>
+                </div>
+
+                <nav class="theme3-nav-tabs" id="theme3-nav-tabs">
+                    <button type="button" class="theme3-tab-btn active" id="t3-tab-movies" data-tab="movies"
+                        onclick="switchTheme3Tab('movies')">Movies</button>
+                    <button type="button" class="theme3-tab-btn" id="t3-tab-series" data-tab="series"
+                        onclick="switchTheme3Tab('series')">TV Series</button>
+                    <button type="button" class="theme3-tab-btn" id="t3-tab-lives" data-tab="lives"
+                        onclick="switchTheme3Tab('lives')">Lives</button>
+                    <button type="button" class="theme3-tab-btn" id="t3-tab-search" data-tab="search"
+                        onclick="openSearchModal()">Search</button>
+                    <button type="button" class="theme3-tab-btn" id="t3-tab-settings" data-tab="settings"
+                        onclick="openSettingsModal()">Settings</button>
+                </nav>
+
+                <div class="theme3-nav-meta">
+                    <div class="theme3-live-indicator"><span class="t3-dot"></span> 4K OTT</div>
+                    <div class="theme3-nav-clock" id="theme3-nav-clock">12:53</div>
+                </div>
+            </header>
+
+            <!-- Main Scrollable Content Area -->
+            <div class="theme3-main-scroll" id="theme3-main-scroll">
+
+                <!-- Hero Spotlight Info matching Screenshot -->
+                <section class="theme3-hero-spotlight" id="theme3-hero-spotlight">
+                    <!-- Vertical Movie Poster Card -->
+                    <div class="theme3-spotlight-poster-card" id="theme3-spotlight-poster-card">
+                        <img id="t3-spotlight-poster"
+                            src="https://image.tmdb.org/t/p/w500/AkJQvtRUr8IfBs23vL65udKRqGk.jpg" alt="Poster"
+                            onerror="this.src='img/theme3_bg.jpg'">
+                        <div class="t3-poster-glass-edge"></div>
+                    </div>
+
+                    <!-- Metadata Details, Release, Duration, Cast, Genre, Synopsis -->
+                    <div class="theme3-spotlight-info">
+                        <h1 id="t3-spotlight-title" class="theme3-spotlight-title">MISSION: IMPOSSIBLE - FALLOUT</h1>
+
+                        <div class="theme3-meta-strip">
+                            <span id="t3-spotlight-release" class="t3-badge-release">July 2018</span>
+                            <span class="t3-meta-divider">&bull;</span>
+                            <span id="t3-spotlight-duration" class="t3-badge-duration">Duration: 148 min</span>
+                            <span class="t3-meta-divider">&bull;</span>
+                            <span class="t3-badge-res">4K ULTRA HD</span>
+                        </div>
+
+                        <div class="theme3-credits-grid">
+                            <div class="t3-credit-row">
+                                <span class="t3-credit-label">Cast:</span>
+                                <span id="t3-spotlight-cast" class="t3-credit-value">Tom Cruise, Henry Cavill, Ving
+                                    Rhames, Simon Pegg</span>
+                            </div>
+                            <div class="t3-credit-row">
+                                <span class="t3-credit-label">Genre:</span>
+                                <span id="t3-spotlight-genre" class="t3-credit-value">Action, Thriller, Adventure</span>
+                            </div>
+                        </div>
+
+                        <p id="t3-spotlight-synopsis" class="theme3-spotlight-synopsis">
+                            When an IMF mission ends badly, the world is faced with dire consequences. As Ethan Hunt
+                            takes it upon himself to fulfill his original briefing, the CIA begin to question his
+                            loyalty and his motives. The IMF team find themselves in a race against time, hunted by
+                            assassins while trying to prevent a global catastrophe.
+                        </p>
+
+                        <!-- Action Buttons -->
+                        <div class="theme3-hero-buttons">
+                            <button type="button" class="t3-btn-primary" id="t3-btn-watch"
+                                onclick="handleTheme3WatchCurrent()">
+                                <i class="fa-solid fa-play"></i> Watch Now
+                            </button>
+                            <button type="button" class="t3-btn-glass" onclick="handleTheme3OpenDetails()">
+                                <i class="fa-solid fa-circle-info"></i> Details
+                            </button>
+                            <button type="button" class="t3-btn-glass" id="t3-btn-fav-toggle"
+                                onclick="handleTheme3ToggleFav()">
+                                <i class="fa-solid fa-heart"></i> Favorite
+                            </button>
+                            <button type="button" class="t3-btn-glass" onclick="openSection('Movies')" title="Browse Full Movies Catalog">
+                                <i class="fa-solid fa-film"></i> All Movies
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Lower Content Rows: LIVES, MOVIES, and TV SERIES -->
+                <section class="theme3-carousels-container">
+
+                    <!-- Row 1: LIVE CHANNELS & FAVORITES -->
+                    <div class="theme3-carousel-row" id="theme3-row-favorites">
+                        <div class="theme3-row-header" onclick="openSection('Live TV')" style="cursor:pointer;" title="Click to view all live channels">
+                            <h3 class="theme3-row-title"><i class="fa-solid fa-satellite-dish" style="color:#38bdf8; margin-right:6px;"></i> LIVE CHANNELS &amp; FAVORITES</h3>
+                            <span class="theme3-row-count" id="t3-count-fav"><i class="fa-solid fa-arrow-right"></i> View All Channels</span>
+                        </div>
+                        <div class="theme3-poster-strip" id="theme3-strip-favorites" tabindex="0">
+                            <!-- Populated dynamically via JavaScript with active highlight -->
+                        </div>
+                    </div>
+
+                    <!-- Row 2: PRIMA FILA VOD (MOVIES) -->
+                    <div class="theme3-carousel-row" id="theme3-row-primafila">
+                        <div class="theme3-row-header" onclick="openSection('Movies')" style="cursor:pointer;" title="Click to view all movies">
+                            <h3 class="theme3-row-title"><i class="fa-solid fa-film" style="color:#eab308; margin-right:6px;"></i> PRIMA FILA VOD (MOVIES)</h3>
+                            <span class="theme3-row-count" id="t3-count-primafila"><i class="fa-solid fa-arrow-right"></i> View All Movies</span>
+                        </div>
+                        <div class="theme3-poster-strip" id="theme3-strip-primafila" tabindex="0">
+                            <!-- Populated dynamically via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Row 3: POPULAR TV SERIES -->
+                    <div class="theme3-carousel-row" id="theme3-row-series">
+                        <div class="theme3-row-header" onclick="openSection('Series')" style="cursor:pointer;" title="Click to view all series">
+                            <h3 class="theme3-row-title"><i class="fa-solid fa-tv" style="color:#a855f7; margin-right:6px;"></i> POPULAR TV SERIES</h3>
+                            <span class="theme3-row-count" id="t3-count-series"><i class="fa-solid fa-arrow-right"></i> View All Series</span>
+                        </div>
+                        <div class="theme3-poster-strip" id="theme3-strip-series" tabindex="0">
+                            <!-- Populated dynamically via JavaScript -->
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+            <!-- TV Remote Control Key Guide Footer -->
+            <footer class="theme3-footer-guide">
+                <div class="t3-guide-left">
+                    <span class="t3-status-dot"></span>
+                    <span>Roch TV OTT Cloud Stream &bull; Low Latency HLS</span>
+                </div>
+                <div class="t3-guide-center">
+                    <span class="t3-kbd-pill"><kbd>◄ ▲ ▼ ►</kbd> Navigate</span>
+                    <span class="t3-kbd-pill"><kbd>OK</kbd> Select / Play</span>
+                    <span class="t3-kbd-pill"><kbd>ESC</kbd> Return</span>
+                </div>
+                <div class="t3-guide-right">
+                    <span><i class="fa-solid fa-shield-halved"></i> Roch TV Cinema Edition</span>
+                </div>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- CONTENT SCREEN (Channels/Movies/Series) -->
+    <div id="content-screen" class="screen">
+        <header class="top-bar">
+            <div class="back-btn" tabindex="0" role="button" onclick="goBack()">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </div>
+            <h2 id="section-title">Section</h2>
+            <div class="search-container" style="position: relative; display: flex; align-items: center;">
+                <i class="fa-solid fa-magnifying-glass"
+                    style="position: absolute; left: 12px; color: var(--text-muted);"></i>
+                <input type="text" id="search-input" placeholder="Search..." oninput="filterItems()"
+                    style="padding: 8px 15px 8px 35px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.5); color: white; outline: none; width: 220px;">
+            </div>
+        </header>
+
+        <div class="split-view">
+            <div class="categories-sidebar" id="categories-list">
+                <!-- Populated by JS -->
+            </div>
+            <div class="items-view" id="items-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        <footer class="content-bottom-bar">
+            <div class="content-bottom-left">
+                <kbd>Back</kbd> Return to Dashboard
+            </div>
+            <div class="content-bottom-right">
+                <i class="fa-solid fa-certificate"></i> license by:ichiban_kuriosaki
+            </div>
+        </footer>
+    </div>
+
+    <!-- EPISODES OVERLAY -->
+    <div id="episodes-overlay" class="overlay">
+        <div class="player-header">
+            <div class="close-player" onclick="closeEpisodes()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </div>
+            <h3 id="episodes-title">Series Name</h3>
+        </div>
+        <div class="episodes-container" id="episodes-list"
+            style="flex:1; overflow-y:auto; padding: 20px; background: var(--bg-color);">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- PLAYER OVERLAY (Enhanced Suite: Sleep Timer, Favorites, Audio/CC Tracks, Aspect Ratio, Quick Zap) -->
+    <div id="player-overlay" class="overlay">
+        <div class="player-header">
+            <div class="player-header-left">
+                <button type="button" class="player-back-btn" onclick="closePlayer()" title="Back / Exit (Esc)">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="player-title-box">
+                    <span id="player-section-tag" class="player-badge-tag">LIVE TV</span>
+                    <h3 id="player-title">Now Playing</h3>
+                </div>
+            </div>
+
+            <div class="player-header-actions">
+                <!-- Previous Channel Recall -->
+                <button type="button" id="btn-player-recall" class="player-action-btn" onclick="recallPreviousChannel()"
+                    title="Previous Channel (Q / Zap)" style="display:none;">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span class="btn-text">Recall</span>
+                </button>
+
+                <!-- Favorite Star Toggle -->
+                <button type="button" id="btn-player-fav" class="player-action-btn"
+                    onclick="toggleCurrentPlayingFavorite()" title="Add to Favorites (F)">
+                    <i class="fa-regular fa-star"></i>
+                    <span class="btn-text" id="player-fav-text">Favorite</span>
+                </button>
+
+                <!-- Aspect Ratio Switcher -->
+                <button type="button" id="btn-player-aspect" class="player-action-btn"
+                    onclick="cyclePlayerAspectRatio()" title="Aspect Ratio (A)">
+                    <i class="fa-solid fa-expand"></i>
+                    <span class="btn-text" id="aspect-ratio-label">Fit</span>
+                </button>
+
+                <!-- Audio, Subtitles & Quality Track Menu -->
+                <div class="player-dropdown-wrap">
+                    <button type="button" id="btn-player-tracks" class="player-action-btn"
+                        onclick="togglePlayerTracksMenu(event)" title="Audio & Subtitles (S)">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span class="btn-text">Tracks</span>
+                    </button>
+                    <div id="player-tracks-menu" class="player-popover-menu" style="display:none;">
+                        <div class="popover-section-header">
+                            <i class="fa-solid fa-headphones"></i> Audio Language
+                        </div>
+                        <div id="player-audio-tracks-list" class="popover-options-list">
+                            <div class="popover-item active">Default Audio</div>
+                        </div>
+
+                        <div class="popover-section-header">
+                            <i class="fa-solid fa-closed-captioning"></i> Subtitles & CC
+                        </div>
+                        <div id="player-subs-tracks-list" class="popover-options-list">
+                            <div class="popover-item active">Off</div>
+                        </div>
+
+                        <div class="popover-section-header">
+                            <i class="fa-solid fa-gear"></i> Stream Quality
+                        </div>
+                        <div id="player-quality-tracks-list" class="popover-options-list">
+                            <div class="popover-item active">Auto (Optimal)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TV Sleep Timer -->
+                <div class="player-dropdown-wrap">
+                    <button type="button" id="btn-player-sleep" class="player-action-btn"
+                        onclick="togglePlayerSleepMenu(event)" title="TV Sleep Timer">
+                        <i class="fa-solid fa-moon"></i>
+                        <span class="btn-text" id="player-sleep-label">Sleep</span>
+                    </button>
+                    <div id="player-sleep-menu" class="player-popover-menu" style="display:none;">
+                        <div class="popover-section-header">
+                            <i class="fa-solid fa-clock"></i> TV Sleep Timer
+                        </div>
+                        <div class="popover-options-list" id="player-sleep-options">
+                            <div class="popover-item active" data-mins="0" onclick="setSleepTimer(0)">Off (Disabled)
+                            </div>
+                            <div class="popover-item" data-mins="15" onclick="setSleepTimer(15)">15 Minutes</div>
+                            <div class="popover-item" data-mins="30" onclick="setSleepTimer(30)">30 Minutes</div>
+                            <div class="popover-item" data-mins="45" onclick="setSleepTimer(45)">45 Minutes</div>
+                            <div class="popover-item" data-mins="60" onclick="setSleepTimer(60)">60 Minutes (1 Hour)
+                            </div>
+                            <div class="popover-item" data-mins="90" onclick="setSleepTimer(90)">90 Minutes (1.5 Hours)
+                            </div>
+                            <div class="popover-item" data-mins="120" onclick="setSleepTimer(120)">120 Minutes (2 Hours)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleep countdown pill if active -->
+                <div id="player-sleep-countdown-pill" class="sleep-countdown-badge" style="display:none;"
+                    onclick="togglePlayerSleepMenu(event)" title="Sleep Timer Active - Click to Change">
+                    <i class="fa-solid fa-moon"></i> <span id="sleep-countdown-text">30:00</span>
+                </div>
+
+                <!-- Close Button -->
+                <div class="close-player" onclick="closePlayer()" title="Close Player (Esc)">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-container" id="video-container" onclick="dismissPlayerMenus(event)"
+            oncontextmenu="return false;">
+            <video id="video-player" controls controlsList="nodownload noplaybackrate" disablePictureInPicture
+                disableRemotePlayback autoplay playsinline class="aspect-fit" oncontextmenu="return false;">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Quick Aspect Ratio / Status Toast HUD -->
+            <div id="player-status-toast" class="player-toast" style="display:none;">
+                <span id="player-toast-text">Aspect Ratio: Fit (Contain)</span>
+            </div>
+
+            <!-- TV Sleep Screen (Active when timer completes) -->
+            <div id="player-sleep-screen" class="player-sleep-overlay" style="display:none;" onclick="wakeFromSleep()">
+                <div class="sleep-screen-card" onclick="event.stopPropagation()">
+                    <div class="sleep-icon-moon"><i class="fa-solid fa-moon fa-bounce"></i></div>
+                    <h2>TV Sleep Timer Activated</h2>
+                    <p>Playback was safely paused to conserve your bandwidth and sleep peacefully.</p>
+                    <button type="button" class="btn-wake-up" onclick="wakeFromSleep()">
+                        <i class="fa-solid fa-play"></i> Wake Up & Resume
+                    </button>
+                    <div class="sleep-wake-tip">Or press any key on remote / tap screen to wake</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE TV CHANNEL SURFING OSD BANNER (Smart TV) -->
+    <div id="channel-osd" class="channel-osd-banner">
+        <span class="osd-tag">LIVE TV</span>
+        <span id="osd-channel-name" class="osd-name">Channel Name</span>
+    </div>
+
+    <!-- SETTINGS & SYSTEM MANAGEMENT MODAL (Smart TV & Multi-Device Hub) -->
+    <div id="settings-modal" class="smartone-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-sliders" style="color:var(--primary-color); font-size:1.4rem;"></i>
+                    <div>
+                        <h3>Roch TV System Management</h3>
+                        <span class="modal-subtitle">Smart TV (VIDAA, Tizen, webOS), Streaming Engine & Network
+                            Setup</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeSettingsModal()" title="Close (ESC / Remote Back)"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="mgmt-tab-bar">
+                <button type="button" class="mgmt-tab active" id="tab-btn-display" onclick="switchMgmtTab('display')">
+                    <i class="fa-solid fa-palette"></i> Display & Theme
+                </button>
+                <button type="button" class="mgmt-tab" id="tab-btn-tv" onclick="switchMgmtTab('tv')">
+                    <i class="fa-solid fa-tv"></i> Smart TV & Remote
+                </button>
+                <button type="button" class="mgmt-tab" id="tab-btn-storage" onclick="switchMgmtTab('storage')">
+                    <i class="fa-solid fa-database"></i> Storage & Health
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- TAB 1: DISPLAY & THEME -->
+                <div id="mgmt-tab-display" class="mgmt-tab-content active">
+                    <div class="setting-group">
+                        <label class="setting-label"><i class="fa-solid fa-swatchbook"></i> Color Theme Preset</label>
+                        <p class="setting-hint">Select your preferred accent styling for cards and UI components:</p>
+                        <div class="theme-options">
+                            <button type="button" class="theme-btn theme-gold active" onclick="setTheme('gold')">
+                                <span class="theme-preview" style="background: #e5a93b;"></span> Cinema Gold
+                            </button>
+                            <button type="button" class="theme-btn theme-ocean" onclick="setTheme('ocean')">
+                                <span class="theme-preview" style="background: #38bdf8;"></span> Ocean Cyan
+                            </button>
+                            <button type="button" class="theme-btn theme-purple" onclick="setTheme('purple')">
+                                <span class="theme-preview" style="background: #a78bfa;"></span> Cinema Violet
+                            </button>
+                            <button type="button" class="theme-btn theme-emerald" onclick="setTheme('emerald')">
+                                <span class="theme-preview" style="background: #34d399;"></span> Emerald Mint
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group" style="margin-top: 14px;">
+                        <label class="setting-label"><i class="fa-solid fa-circle-half-stroke"></i> Panel Glass
+                            Transparency</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="transparency-slider" min="30" max="95" value="75"
+                                oninput="updateTransparency(this.value)">
+                            <span id="transparency-value">75%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: SMART TV & REMOTE SETUP -->
+                <div id="mgmt-tab-tv" class="mgmt-tab-content">
+                    <div class="setting-group">
+                        <label class="setting-label"><i class="fa-solid fa-microchip"></i> Detected Smart TV
+                            System</label>
+                        <div class="account-summary-box">
+                            <div class="account-row"><span>Platform Environment:</span> <strong id="detected-tv-os"
+                                    style="color:var(--primary-color);">Detecting...</strong></div>
+                            <div class="account-row"><span>Spatial D-Pad Engine:</span> <span
+                                    class="badge-status-ok">Active (Tizen, VIDAA, webOS, Android)</span></div>
+                            <div class="account-row"><span>Hardware Video Decoder:</span> <span
+                                    id="hw-decode-status">Supported</span></div>
+                        </div>
+                    </div>
+
+                    <div class="setting-group" style="margin-top: 14px;">
+                        <label class="setting-label"><i class="fa-solid fa-play"></i> Video Player Engine</label>
+                        <p class="setting-hint">Select the best streaming decoder engine for your TV model:</p>
+                        <select id="tv-player-engine-select" onchange="changePlayerEngine(this.value)"
+                            style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:#fff; font-size:0.85rem; margin-top:6px; outline:none;">
+                            <option value="auto">Auto-Detect (Smart TV Hardware Optimized - Recommended)</option>
+                            <option value="native">Native TV Hardware Decoder (Best for Samsung Tizen & LG webOS)
+                            </option>
+                            <option value="hls">HLS.js JavaScript Engine (Best for VIDAA OS & Android TV)</option>
+                            <option value="direct">Direct Stream Mode (Raw Passthrough)</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group apk-download-target"
+                        style="margin-top: 14px; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 12px; padding: 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <label class="setting-label" style="color:#4ade80; margin:0;"><i
+                                        class="fa-brands fa-android"></i> Android TV APK Edition</label>
+                                <p class="setting-hint" style="margin:4px 0 0 0;">Download native TV app for FireStick,
+                                    Sony, TCL & Android TV boxes:</p>
+                            </div>
+                            <a href="downloads/roch-tv.apk" download
+                                style="background:#22c55e; color:#000; font-weight:700; font-size:0.82rem; padding:8px 14px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-tv"></i> Download for TV Devices
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="setting-group"
+                        style="margin-top: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 12px; padding: 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <label class="setting-label" style="color:#ffffff; margin:0;"><i
+                                        class="fa-brands fa-apple"></i> Apple iOS Edition (iPhone &amp; iPad)</label>
+                                <p class="setting-hint" style="margin:4px 0 0 0;">Install Instant Web App (PWA) or App
+                                    Store Player for all iOS versions:</p>
+                            </div>
+                            <button type="button" onclick="openIosInstallModal()"
+                                style="background:#ffffff; color:#000; font-weight:700; font-size:0.82rem; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-brands fa-apple"></i> iOS Setup Guide
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group"
+                        style="margin-top: 14px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <label class="setting-label" style="color:#38bdf8; margin:0;"><i
+                                        class="fa-solid fa-cloud-arrow-down"></i> OTA System & App Updater</label>
+                                <p class="setting-hint" style="margin:4px 0 0 0;">Check for new software updates for
+                                    your TV device:</p>
+                            </div>
+                            <button type="button" onclick="checkAppUpdatesManual()"
+                                style="background:#38bdf8; color:#000; font-weight:700; font-size:0.82rem; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-arrows-rotate"></i> Check for Updates
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group" style="margin-top: 14px;">
+                        <label class="setting-label"><i class="fa-solid fa-gamepad"></i> Smart TV Remote Key Signal
+                            Diagnostic</label>
+                        <p class="setting-hint">Press any button on your physical TV Remote to test incoming signals:
+                        </p>
+                        <div
+                            style="background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+                            <div>
+                                <span style="font-size:0.75rem; color:#888;">Last Detected Remote Key:</span>
+                                <div id="key-tester-display"
+                                    style="font-size:0.95rem; font-weight:700; color:#fff; margin-top:2px;">Waiting for
+                                    remote key press...</div>
+                            </div>
+                            <div id="key-tester-indicator"
+                                style="width:12px; height:12px; border-radius:50%; background:#444;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: STORAGE & HEALTH -->
+                <div id="mgmt-tab-storage" class="mgmt-tab-content">
+                    <div class="setting-group">
+                        <label class="setting-label"><i class="fa-solid fa-hard-drive"></i> Cache & Playlist
+                            Health</label>
+                        <div class="account-summary-box">
+                            <div class="account-row"><span>In-Memory Client Cache:</span> <strong
+                                    id="mgmt-mem-cache-count">Active (0 entries)</strong></div>
+                            <div class="account-row"><span>Saved Favorites:</span> <strong id="mgmt-fav-count">0
+                                    items</strong></div>
+                            <div class="account-row"><span>Account Status:</span> <span class="badge-status-ok"
+                                    id="modal-account-status">Active</span></div>
+                            <div class="account-row"><span>Account Expiry:</span> <strong
+                                    id="modal-account-expiry">Unlimited</strong></div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:16px;">
+                        <button type="button" onclick="purgeSystemCache()"
+                            style="flex:1; padding:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-weight:600; cursor:pointer; font-size:0.85rem;">
+                            <i class="fa-solid fa-trash-can" style="margin-right:6px;"></i> Purge Server Cache
+                        </button>
+                        <button type="button" onclick="resetSystemToDefaults()"
+                            style="flex:1; padding:12px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:10px; color:#fca5a5; font-weight:600; cursor:pointer; font-size:0.85rem;">
+                            <i class="fa-solid fa-power-off" style="margin-right:6px;"></i> Factory Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeSettingsModal()">Apply & Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HOTEL IPTV SOLUTION MODALS ================= -->
+    <!-- 1. Room & Hotel Info Modal -->
+    <div id="hotel-room-modal" class="smartone-modal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-hotel" style="color:#22c55e; font-size:1.4rem;"></i>
+                    <div>
+                        <h3 id="hotel-modal-room-title">Room 102 - Concierge & Portal</h3>
+                        <span class="modal-subtitle">Welcome to Luxury Resort IPTV Suite</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeHotelModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 12px;">
+                    <div style="font-weight: 700; color: #4ade80; font-size: 1rem; margin-bottom: 4px;">Welcome to Your
+                        Villa Suite</div>
+                    <div style="font-size: 0.85rem; color: #cbd5e1;">Enjoy unlimited high-definition IPTV television,
+                        movie library on demand, and complete resort room services.</div>
+                </div>
+                <div class="account-summary-box">
+                    <div class="account-row"><span>Device MAC:</span> <strong id="hotel-info-mac"
+                            style="color:#38bdf8;">--:--:--:--:--:--</strong></div>
+                    <div class="account-row"><span>Streaming Line:</span> <strong id="hotel-info-user">Guest</strong>
+                    </div>
+                    <div class="account-row"><span>IPTV Service Status:</span> <span class="badge-status-ok">Active
+                            Authorized</span></div>
+                    <div class="account-row"><span>Concierge Hotline:</span> <strong>Dial 0 or Press OK</strong></div>
+                    <div class="account-row"><span>Resort Wi-Fi:</span> <strong>RochTV_HighSpeed_5G (Free)</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeHotelModals()">Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Hotel Bill & Subscription Modal -->
+    <div id="hotel-bill-modal" class="smartone-modal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-credit-card" style="color:#38bdf8; font-size:1.4rem;"></i>
+                    <div>
+                        <h3>Billing & Subscription License</h3>
+                        <span class="modal-subtitle">Roch TV Entertainment License</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeHotelModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="account-summary-box">
+                    <div class="account-row"><span>Account Status:</span> <span class="badge-status-ok"
+                            id="hotel-bill-status">Active</span></div>
+                    <div class="account-row"><span>Subscription Plan:</span> <strong>VIP Hospitality All-Access
+                            4K</strong></div>
+                    <div class="account-row"><span>Account Expiry:</span> <strong id="hotel-bill-expiry"
+                            style="color:#facc15;">Unlimited</strong></div>
+                    <div class="account-row"><span>Assigned Line:</span> <strong id="hotel-bill-user">Guest</strong>
+                    </div>
+                    <div class="account-row"><span>Current Charges:</span> <strong style="color:#4ade80;">Included with
+                            Suite</strong></div>
+                </div>
+                <button type="button" class="btn-primary"
+                    style="width:100%; margin-top:14px; padding:12px; background:#ec4899; font-weight:700;"
+                    onclick="closeHotelModals(); openRedeemGiftCodePrompt();">
+                    <i class="fa-solid fa-gift"></i> Redeem Gift Code / Voucher
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeHotelModals()">Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Hotel Weather Modal -->
+    <div id="hotel-weather-modal" class="smartone-modal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-cloud-sun" style="color:#facc15; font-size:1.4rem;"></i>
+                    <div>
+                        <h3>Resort Weather Forecast</h3>
+                        <span class="modal-subtitle">Live Meteorological Station Data</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeHotelModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="text-align: center; padding: 18px 0; background: rgba(0,0,0,0.3); border-radius: 12px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-cloud-showers-heavy"
+                        style="font-size: 3rem; color: #38bdf8; margin-bottom: 8px;"></i>
+                    <div style="font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1;">+10°C</div>
+                    <div style="font-size: 1rem; color: #94a3b8; margin-top: 4px;">Light Rain & Gentle Breeze</div>
+                </div>
+                <div class="account-summary-box">
+                    <div class="account-row"><span>Humidity:</span> <strong>78%</strong></div>
+                    <div class="account-row"><span>Wind Speed:</span> <strong>14 km/h ENE</strong></div>
+                    <div class="account-row"><span>UV Index:</span> <strong>Low (2/10)</strong></div>
+                    <div class="account-row"><span>Tomorrow Outlook:</span> <strong style="color:#4ade80;">Sunny & Clear
+                            (+26°C)</strong></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeHotelModals()">Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Hotel Dining Modal -->
+    <div id="hotel-dining-modal" class="smartone-modal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-utensils" style="color:#f97316; font-size:1.4rem;"></i>
+                    <div>
+                        <h3>Resort Dining & Room Service</h3>
+                        <span class="modal-subtitle">Gourmet Culinary Feasts Delivered to Room</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeHotelModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="height: 140px; border-radius: 10px; background-image: url('img/theme2_dining.jpg'); background-size: cover; background-position: center; position: relative; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.15);">
+                    <div
+                        style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);">
+                    </div>
+                    <div
+                        style="position: absolute; bottom: 10px; left: 14px; font-weight: 700; color: #fff; font-size: 1.1rem;">
+                        The Azure Pavilion Restaurant
+                    </div>
+                </div>
+                <div class="account-summary-box">
+                    <div class="account-row"><span>Breakfast Buffet:</span> <strong>06:00 - 10:30 AM</strong></div>
+                    <div class="account-row"><span>Fine Dining Dinner:</span> <strong>06:00 - 11:00 PM</strong></div>
+                    <div class="account-row"><span>24/7 Villa In-Room Dining:</span> <strong
+                            style="color:#4ade80;">Available (Dial 104)</strong></div>
+                </div>
+                <button type="button" class="btn-primary"
+                    style="width:100%; margin-top:14px; padding:12px; background:#e11d48; font-weight:700;"
+                    onclick="closeHotelModals(); openSection('Series');">
+                    <i class="fa-solid fa-tv"></i> Browse Food & Entertainment Series
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeHotelModals()">Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Hotel Room Services Modal -->
+    <div id="hotel-services-modal" class="smartone-modal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-bell-concierge" style="color:#22c55e; font-size:1.4rem;"></i>
+                    <div>
+                        <h3>Guest & Room Services</h3>
+                        <span class="modal-subtitle">Hospitality Amenities & Housekeeping</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeHotelModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="height: 140px; border-radius: 10px; background-image: url('img/theme2_bed.jpg'); background-size: cover; background-position: center; position: relative; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.15);">
+                    <div
+                        style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);">
+                    </div>
+                    <div
+                        style="position: absolute; bottom: 10px; left: 14px; font-weight: 700; color: #fff; font-size: 1.1rem;">
+                        Luxury Villa Concierge & Services
+                    </div>
+                </div>
+                <div class="account-summary-box">
+                    <div class="account-row"><span>Housekeeping & Turndown:</span> <strong>Dial 101</strong></div>
+                    <div class="account-row"><span>Fresh Towels & Laundry:</span> <strong>Dial 102</strong></div>
+                    <div class="account-row"><span>Luggage & Transportation:</span> <strong>Dial 100 (Front
+                            Desk)</strong></div>
+                    <div class="account-row"><span>Technical & TV Support:</span> <strong style="color:#38bdf8;">Ext
+                            105</strong></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="closeHotelModals()">Return to TV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APPLE iOS INSTALLATION & SETUP MODAL ================= -->
+    <div id="modal-ios-install" class="smartone-modal">
+        <div class="modal-card" style="max-width: 620px;">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-brands fa-apple" style="color: #ffffff; font-size: 1.6rem;"></i>
+                    <div>
+                        <h3>Apple iOS Installation &amp; Setup</h3>
+                        <span class="modal-subtitle">Universal Support for iPhone, iPad &amp; Apple TV (All iOS
+                            Versions)</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeIosInstallModal()" title="Close"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px 24px;">
+                <div class="ios-feature-banner">
+                    <div class="ios-banner-badge"><i class="fa-solid fa-shield-halved"></i> 100% UNREVOKABLE</div>
+                    <h4 style="margin: 6px 0 4px; color: #fff; font-size: 1rem;">Roch TV Native App for Apple iOS</h4>
+                    <p style="font-size: 0.8rem; color: #cbd5e1; margin: 0; line-height: 1.4;">
+                        Install <strong>Roch TV directly onto your iPhone or iPad Home Screen</strong>. Works across
+                        <strong>all iOS versions (iOS 12 through iOS 18+)</strong> with full-screen hardware streaming.
+                    </p>
+                </div>
+
+                <!-- Official Apple App Store Style Badge Button (Downloads Roch TV iOS) -->
+                <div style="margin: 18px 0; text-align: center;">
+                    <a href="download-ios.php" onclick="triggerIosRochDownload(event)" class="btn-apple-store-download"
+                        id="btn-apple-store-roch"
+                        style="min-width: 270px; justify-content: center; cursor: pointer; text-decoration: none;">
+                        <i class="fa-brands fa-apple" style="font-size: 2.2rem; color: #fff;"></i>
+                        <div style="text-align: left;">
+                            <div
+                                style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85;">
+                                Download on the</div>
+                            <div
+                                style="font-size: 1.25rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em;">
+                                Apple App Store</div>
+                        </div>
+                    </a>
+                    <div id="ios-auto-dl-notice"
+                        style="margin-top: 10px; font-size: 0.84rem; color: #38bdf8; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-check" style="color: #22c55e;"></i> Roch TV iOS download ready!
+                        Follow the 3 steps below:
+                    </div>
+                </div>
+
+                <div class="ios-steps-list">
+                    <div class="ios-step-item">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Tap Download &amp; Allow</div>
+                            <div class="step-desc">Tap <strong>"Allow"</strong> on the prompt in Safari, or tap the
+                                <strong>Apple App Store</strong> button above to download.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ios-step-item">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Open iPhone Settings</div>
+                            <div class="step-desc">Open the <strong>Settings</strong> app on your iPhone/iPad. Tap
+                                <strong style="color:#38bdf8;">"Profile Downloaded"</strong> at the top of the menu.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ios-step-item">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Tap Install &amp; Enjoy</div>
+                            <div class="step-desc">Tap <strong>"Install"</strong> in the top-right corner. The
+                                <strong>Roch TV app icon</strong> will instantly appear on your Home Screen!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top: 14px; background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="overflow: hidden;">
+                        <span
+                            style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Or
+                            Add via Safari Home Screen</span>
+                        <div id="ios-pwa-url-display"
+                            style="font-size: 0.86rem; color: #38bdf8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+                            --</div>
+                    </div>
+                    <button type="button" class="btn-copy-chip" onclick="copyIosPwaUrl()" id="btn-copy-pwa-url"
+                        style="flex-shrink:0;">
+                        <i class="fa-regular fa-copy"></i> <span>Copy Link</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer"
+                style="padding: 14px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.75rem; color: #64748b;">
+                    <i class="fa-solid fa-circle-check" style="color: #22c55e;"></i> Fully Tested on iOS 12 — iOS 18+
+                </div>
+                <button type="button" class="btn-modal-save" onclick="closeIosInstallModal()">Close Guide</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="js/dynamic-bg.js?v=65"></script>
+    <script src="js/app.js?v=65"></script>
+</body>
+
+</html>
